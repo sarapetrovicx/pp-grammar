@@ -1,0 +1,14 @@
+main[
+    var:
+        int~i,j;
+        char~ch;
+        bool~true;
+    <
+        i=1;
+        input(j)
+        input(ch);
+        if true do
+            i==3;
+        else
+    >
+]

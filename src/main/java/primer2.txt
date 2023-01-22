@@ -1,0 +1,13 @@
+main=>[
+    var:
+        int~i,j;
+        bool~false;
+    <
+        i==2;
+        j==i+3;
+        if false do
+            output(i);
+        else
+            output(j);
+    >
+]

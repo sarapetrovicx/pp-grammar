@@ -1,0 +1,398 @@
+//import section
+
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+      public int errNo = 0;
+
+      public static void main( String[] args )
+      {
+         try
+   	  {
+   		   FileReader file = new FileReader( "src/main/java/primer1.txt" );
+   		   Scanner scanner = new MPLexer( file );
+   		   parser parser = new parser( scanner );
+   		   parser.parse();
+   		   if ( parser.errNo == 0 )
+   		      System.out.println( "Analiza zavrsena. U kodu nema gresaka." );
+   		   else
+   		      System.out.println( "Analiza zavrsena. Broj gresaka: " + parser.errNo );
+   	  }
+   	  catch( Exception e )
+   	  {
+   		   System.out.println(e);
+   	  }
+      }
+
+      public void syntax_error(Symbol cur_token)
+      {
+
+      }
+
+      public void report_error(String message, Object info)
+      {
+      	   System.out.print( message );
+      }
+
+      public int getLine()
+      {
+      	  return (( MPLexer) getScanner()).getLine();
+      }
+ :};
+
+
+
+//Terminal symbols
+terminal MAIN, VAR, INT, CHAR, BOOL, LEFTBRA, RIGHTBRA, BEGIN, END, INPUT, OUTPUT, IF, DO, ELSE, WHILE;
+terminal PLUS, MUL, LEFTPAR, RIGHTPAR, DOTDOT, ASSIGN, SEMI, COMMA, ARROW, TILDE, DOT;
+terminal ID, CONST;
+
+
+//Nonterminal symbols
+non terminal Program, Blok, NizNar;
+non terminal DeklProm, NizDekl, Deklaracija;
+non terminal Ulaz, Izlaz, Petlja;
+non terminal Naredba;
+non terminal Dodela;
+non terminal IfNar;
+non terminal Izraz, PIzraz, FIzraz;
+non terminal Tip;
+non terminal  NizImena;
+
+//Grammar
+
+Program ::= MAIN ARROW LEFTBRA DeklProm Blok RIGHTBRA
+            {:
+               System.out.println( "Redukcija po smeni 1." );
+            :}
+            |MAIN ARROW LEFTBRA DeklProm Blok error:e
+             {:
+               System.out.println( "Nedostaje ']' na kraju programa" );
+               parser.errNo++;
+            :}
+             |MAIN ARROW LEFTBRA error
+             {:
+               System.out.println( "Nedostaje ']' na kraju programa" );
+               parser.errNo++;
+            :}
+            |MAIN error LEFTBRA DeklProm Blok RIGHTBRA
+             {:
+               System.out.println( "Nedostaje '=>' posle maina" );
+               parser.errNo++;
+            :}
+            |MAIN ARROW error DeklProm Blok RIGHTBRA
+             {:
+               System.out.println( "Nedostaje '[' posle maina" );
+               parser.errNo++;
+             :}
+             ;
+
+DeklProm ::= VAR DOTDOT NizDekl
+            {:
+               System.out.println( "Redukcija po smeni 2." );
+            :}
+            |VAR error NizDekl
+            {:
+               	System.out.println("Greska u liniji " + parser.getLine() + ": " +  "Nedostaje ':' posle var" );
+               parser.errNo++;
+             :}
+             |error DOTDOT NizDekl
+             {:
+                System.out.println("Greska u liniji " + parser.getLine() + ": " + "Nedostaje var" );
+                parser.errNo++;
+              :}
+           |VAR DOTDOT error
+           {:
+              System.out.println("Greska u liniji " + parser.getLine() + ": " + "Nedostaje deklaracija promenljivih" );
+              parser.errNo++;
+            :}
+
+            ;
+
+NizDekl ::= NizDekl Deklaracija
+          {:
+                System.out.println( "Redukcija po smeni 3." );
+           :}
+          | Deklaracija
+            {:
+                 System.out.println( "Redukcija po smeni 4." );
+            :};
+
+Deklaracija ::=  Tip TILDE NizImena SEMI
+            {:
+                 System.out.println( "Redukcija po smeni 5." );
+            :}
+            |Tip error NizImena SEMI
+            {:
+              System.out.println("Greska u liniji " + parser.getLine() + ": " + "Nedostaje '~' " );
+              parser.errNo++;
+            :}
+             |Tip TILDE NizImena error
+            {:
+              System.out.println("Greska u liniji " + parser.getLine() + ": " + "Nedostaje ';' " );
+              parser.errNo++;
+            :}
+             |error TILDE NizImena SEMI
+            {:
+              System.out.println("Greska u liniji " + parser.getLine() + ": " + "Nedostaje tip promenljive " );
+              parser.errNo++;
+            :}
+            ;
+
+NizImena ::= NizImena COMMA ID
+            {:
+                 System.out.println( "Redukcija po smeni 6." );
+            :}
+            | ID
+           {:
+              System.out.println( "Redukcija po smeni 6.1" );
+           :};
+
+Tip ::= INT
+                    {:
+                         System.out.println( "Redukcija po smeni 7." );
+                    :}
+      | CHAR
+                  {:
+                       System.out.println( "Redukcija po smeni 8." );
+                  :}
+      | BOOL
+                  {:
+                       System.out.println( "Redukcija po smeni 9." );
+                  :};
+
+Blok ::= BEGIN NizNar END
+            {:
+                 System.out.println( "Redukcija po smeni 10." );
+            :}
+            |BEGIN NizNar error
+            {:
+              System.out.println("Greska u liniji " + parser.getLine() + ": " + "Nedostaje '>'" );
+              parser.errNo++;
+            :}
+            | BEGIN error
+             {:
+                System.out.println("Greska u liniji " + parser.getLine() + ": " +
+                    "Telo bloka je nekorektno");
+                parser.errNo++;
+             :}
+            ;
+
+NizNar ::= NizNar Naredba
+            {:
+                 System.out.println( "Redukcija po smeni 11." );
+            :}
+
+             | Naredba
+           {:
+              System.out.println( "Redukcija po smeni 11.1." );
+           :};
+
+Naredba ::= Dodela
+            {:
+                 System.out.println( "Redukcija po smeni 12." );
+            :}
+        | Blok
+                    {:
+                         System.out.println( "Redukcija po smeni 13." );
+                    :}
+        | IfNar
+                    {:
+                         System.out.println( "Redukcija po smeni 14." );
+                    :}
+        | Ulaz
+                    {:
+                         System.out.println( "Redukcija po smeni 15." );
+                    :}
+        | Izlaz
+                    {:
+                         System.out.println( "Redukcija po smeni 16." );
+                    :}
+        | Petlja
+                    {:
+                         System.out.println( "Redukcija po smeni 17." );
+                    :};
+
+Dodela ::= ID ASSIGN Izraz SEMI
+             {:
+                  System.out.println( "Redukcija po smeni 18." );
+             :}
+            | ID ASSIGN error
+            {:
+               System.out.println("Greska u liniji " + parser.getLine() + ": " +
+                "Nekorektan izraz.");
+               parser.errNo++;
+            :}
+            | ID error
+          {:
+            System.out.println("Greska u liniji " + parser.getLine() + ": " +
+              "Nedostaje '=='.");
+            parser.errNo++;
+          :}
+            ;
+Ulaz ::= INPUT LEFTPAR ID RIGHTPAR SEMI
+            {:
+                 System.out.println( "Redukcija po smeni 19." );
+            :}
+            | INPUT LEFTPAR ID error SEMI
+             {:
+                System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                    "Nedostaje ')'.");
+                parser.errNo++;
+             :}
+              | INPUT LEFTPAR ID RIGHTPAR error
+              {:
+                 System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                     "Nedostaje ';'.");
+                 parser.errNo++;
+              :}
+              | INPUT LEFTPAR ID error
+              {:
+                 System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                     "Nedostaje ')'.");
+                 parser.errNo++;
+              :}
+               | INPUT error ID RIGHTPAR SEMI
+               {:
+                  System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                      "Nedostaje '('.");
+                  parser.errNo++;
+               :}
+            ;
+
+Izlaz ::= OUTPUT LEFTPAR Izraz RIGHTPAR SEMI
+            {:
+                 System.out.println( "Redukcija po smeni 20." );
+            :}
+            | OUTPUT LEFTPAR Izraz error SEMI
+             {:
+                 System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                     "Nedostaje ')'.");
+                 parser.errNo++;
+              :}
+              | OUTPUT LEFTPAR Izraz error
+               {:
+                   System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                       "Nedostaje ')'.");
+                   parser.errNo++;
+                :}
+              | OUTPUT LEFTPAR Izraz RIGHTPAR error
+             {:
+                 System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                     "Nedostaje ';'.");
+                 parser.errNo++;
+              :}
+               | OUTPUT error Izraz RIGHTPAR SEMI
+               {:
+                   System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                       "Nedostaje '('.");
+                   parser.errNo++;
+                :}
+            ;
+
+
+Petlja ::= WHILE Izraz DO Naredba
+            {:
+                 System.out.println( "Redukcija po smeni 21." );
+            :}
+            |WHILE Izraz error Naredba
+             {:
+               System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                   "Nedostaje 'do'.");
+               parser.errNo++;
+            :}
+            |WHILE Izraz DO error
+             {:
+               System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                   "Nedostaje 'naredba'.");
+               parser.errNo++;
+            :}
+            |WHILE error DO Naredba
+             {:
+               System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                   "Nedostaje 'izraz'.");
+               parser.errNo++;
+            :}
+            ;
+Izraz ::= Izraz PLUS PIzraz
+            {:
+                 System.out.println( "Redukcija po smeni 22." );
+            :}
+             | Izraz PLUS error
+              {:
+                 System.out.println("Greska u liniji " + parser.getLine() + ": " +
+                    "Nekorektan izraz.");
+                 parser.errNo++;
+              :}
+             | PIzraz
+              {:
+                 System.out.println( "Redukcija po smeni 22.1" );
+              :};
+
+PIzraz ::= PIzraz MUL FIzraz
+            {:
+                 System.out.println( "Redukcija po smeni 23." );
+            :}
+
+           | PIzraz MUL error
+             {:
+                System.out.println("Greska u liniji " + parser.getLine() + ": " +
+                    "Nekorektan izraz.");
+                parser.errNo++;
+             :}
+            | FIzraz
+           {:
+              System.out.println( "Redukcija po smeni 24." );
+           :}
+            ;
+FIzraz ::= ID
+            {:
+                 System.out.println( "Redukcija po smeni 24." );
+            :}
+         | CONST
+                     {:
+                          System.out.println( "Redukcija po smeni 25." );
+                     :}
+         | LEFTPAR Izraz RIGHTPAR
+                     {:
+                          System.out.println( "Redukcija po smeni 26." );
+                     :}
+          | LEFTPAR Izraz error
+                    {:
+                       System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                        "Nedostaje ')'.");
+                       parser.errNo++;
+                    :}
+          | LEFTPAR error
+                    {:
+                       System.out.println("Greska u liniji " + parser.getLine() + ": " +
+                        "Nekorektan izraz.");
+                       parser.errNo++;
+                    :}
+                     ;
+
+
+IfNar ::=  IF Izraz DO Naredba ELSE Naredba
+                    {:
+                         System.out.println( "Redukcija po smeni 29." );
+                    :}
+           | IF Izraz DO Naredba ELSE error
+                      {:
+                         System.out.println( "Greska u liniji " + parser.getLine() + ": " +
+                         	"Nedostaje naredba u 'else' grani.");
+                         parser.errNo++;
+                      :}
+           | IF Izraz DO Naredba error
+                {:
+                   System.out.println("Greska u liniji " + parser.getLine() + ": " +
+                    "Nedostaje kljucna rec 'else'.");
+                   parser.errNo++;
+                :}
+             | IF Izraz error Naredba ELSE Naredba
+                      {:
+                         System.out.println("Greska u liniji " + parser.getLine() + ": " +
+                            "Nedostaje kljucna rec 'do'.");
+                         parser.errNo++;
+                      :}
+             ;

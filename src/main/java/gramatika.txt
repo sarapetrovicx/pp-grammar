@@ -1,0 +1,18 @@
+1. Program-> main=>[DeklBlok Blok]
+2. DeklBlok-> var:NizDekl
+3. NizDekl-> NizDekl Deklaracija | Deklaracija
+4. Deklaracija-> Tip~NizImena;
+5. NizImena-> NizImena,ID | ID
+6. Tip-> int|char|bool
+7. Blok-> <NizNar>
+8. NizNar-> NizNar Naredba | Naredba
+9. Naredba-> Dodela|Blok|IfNar|Ulaz|Izlaz|Petlja
+10. Dodela-> ID == Izraz;
+11. Ulaz-> input(id);
+12. Izlaz-> output(Izraz);
+13. Petlja-> while Izraz do Naredba
+14. Izraz-> Izraz+PIzraz | PIzraz
+15. PIzraz-> PIzraz*FIzraz | FIzraz
+16. FIzraz-> ID|Konstanta|(Izraz)
+17. Konstanta-> INTCONST | CHARCONST
+18. IfNar-> if Izraz do Naredba else Naredba

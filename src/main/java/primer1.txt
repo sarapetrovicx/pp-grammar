@@ -1,0 +1,14 @@
+main=>[
+    var:
+        int~i,j;
+        bool~true;
+    <
+        input(i);
+        input(j);
+        while true do
+           i==i+3;
+        j==i*2;
+        output(i);
+        output(j);
+    >
+]

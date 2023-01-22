@@ -1,0 +1,14 @@
+main=>
+    var:
+        int~i,j;
+        bool~true;
+    <
+        i=5;
+        input(j
+        while true do
+            i==i+1;
+        output(i);
+        output(j);
+        while true do
+    >
+]
